@@ -10,7 +10,7 @@ export const useStreakSystem = () => {
     const { user } = useAuth();
 
     const calculateCurrentStreaks = useCallback((list) => {
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toLocaleDateString('en-CA'); // Gets YYYY-MM-DD in local time
         return list.map(streak => {
             const lastReset = streak.lastResetDate || streak.createdAt;
             const daysSinceReset = differenceInCalendarDays(parseISO(today), parseISO(lastReset));
@@ -55,7 +55,7 @@ export const useStreakSystem = () => {
 
     const addStreak = async (name) => {
         if (!user) return;
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toLocaleDateString('en-CA');
         const newStreakData = {
             userId: user.$id,
             name,
@@ -89,7 +89,7 @@ export const useStreakSystem = () => {
         const streak = streaks.find(s => s.id === id);
         if (!streak) return;
 
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toLocaleDateString('en-CA');
         const newHistory = [
             { date: today, streakAtBreak: streak.count },
             ...streak.brokenHistory

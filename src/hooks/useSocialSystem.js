@@ -167,7 +167,7 @@ export const useSocialSystem = () => {
             );
 
             // 3. Calculate total momentum for each user
-            const today = new Date().toISOString().split('T')[0];
+            const today = new Date().toLocaleDateString('en-CA');
             const leaderStats = {};
 
             userIds.forEach(uid => {
