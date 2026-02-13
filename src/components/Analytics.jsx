@@ -360,10 +360,10 @@ const Analytics = ({ streaks }) => {
 
                             <button
                                 onClick={handleDownloadReport}
-                                className="flex items-center gap-2 text-accent text-xs font-bold uppercase tracking-widest hover:underline transition-all hover:gap-3"
+                                className="w-10 h-10 glass rounded-xl flex items-center justify-center text-accent hover:bg-accent/10 transition-all premium-shadow"
+                                title="Download Report"
                             >
-                                <Download size={14} />
-                                Download
+                                <Download size={18} />
                             </button>
                         </div>
                     </div>
