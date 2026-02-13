@@ -53,14 +53,14 @@ const AuthPage = () => {
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden font-sans">
-            {/* Background Orbs */}
-            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-accent/20 rounded-full blur-[120px] animate-pulse duration-[4000ms]" />
-            <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse duration-[5000ms]" />
+            {/* Background Orbs - Hidden on mobile for performance */}
+            <div className="hidden md:block absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-accent/20 rounded-full blur-[120px] animate-pulse duration-[4000ms]" />
+            <div className="hidden md:block absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 rounded-full blur-[120px] animate-pulse duration-[5000ms]" />
 
             <m.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md"
+                className="w-full max-w-md gpu-accelerated"
             >
                 <div className="glass rounded-[2.5rem] p-8 md:p-12 premium-shadow border-white/5 relative z-10 overflow-hidden">
                     {/* Decorative glow inside card */}

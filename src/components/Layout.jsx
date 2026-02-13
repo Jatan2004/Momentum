@@ -48,10 +48,10 @@ const Layout = ({ children, activeTab, onTabChange, user, onLogout, level, xpPro
 
     return (
         <div className="min-h-screen">
-            {/* Background Glow */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[500px] bg-accent/10 blur-[120px] pointer-events-none -z-10" />
+            {/* Background Glow - Hidden on mobile for performance */}
+            <div className="hidden md:block fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[500px] bg-accent/10 blur-[120px] pointer-events-none -z-10" />
 
-            <header className="fixed top-0 left-0 right-0 h-20 glass z-40 px-6 md:px-12 flex items-center justify-between border-b border-white/5">
+            <header className="fixed top-0 left-0 right-0 h-20 glass z-40 px-6 md:px-12 flex items-center justify-between border-b border-white/5 gpu-accelerated">
                 <div className="flex items-center gap-3">
                     <m.button
                         whileHover={{ scale: 1.1, rotate: -5 }}
@@ -74,11 +74,11 @@ const Layout = ({ children, activeTab, onTabChange, user, onLogout, level, xpPro
                                 LVL {level || 1}
                             </div>
                         </div>
-                        <div className="w-24 md:w-32 h-1 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                        <div className="w-24 md:w-32 h-1 bg-white/5 rounded-full overflow-hidden border border-white/5 relative">
                             <m.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${xpProgress || 0}%` }}
-                                className="h-full bg-gradient-to-r from-accent to-purple-500 shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]"
+                                initial={{ scaleX: 0 }}
+                                animate={{ scaleX: xpProgress / 100 || 0 }}
+                                className="absolute inset-0 h-full bg-gradient-to-r from-accent to-purple-500 shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)] origin-left"
                                 transition={{ duration: 1, ease: "easeOut" }}
                             />
                         </div>

@@ -90,7 +90,7 @@ const StreakCard = ({ id, name, count, longestStreak = 0, brokenHistory = [], on
                     opacity: 1,
                     scale: isBreaking ? [1, 1.02, 0.98, 1] : 1
                 }}
-                className={`glass rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 relative overflow-hidden group hover:border-accent/40 transition-all duration-500 premium-shadow cursor-pointer flex flex-col h-full min-h-[220px] md:min-h-[320px] ${isBreaking ? 'opacity-50' : ''}`}
+                className={`glass rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 relative overflow-hidden group hover:border-accent/40 transition-all duration-500 premium-shadow cursor-pointer flex flex-col h-full min-h-[220px] md:min-h-[320px] gpu-accelerated ${isBreaking ? 'opacity-50' : ''}`}
                 onClick={() => setIsHistoryOpen(true)}
             >
                 {/* Background decoration */}
@@ -176,7 +176,7 @@ const StreakCard = ({ id, name, count, longestStreak = 0, brokenHistory = [], on
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsHistoryOpen(false)}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md md:backdrop-blur-xl"
                         />
                         <m.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}

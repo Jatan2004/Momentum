@@ -24,6 +24,27 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* PERFORMANCE OPTIMIZATIONS FOR MOBILE */
+@media (max-width: 768px) {
+  .glass {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(25, 25, 35, 0.8);
+    /* Slightly more opaque background to compensate for less blur */
+  }
+
+  body {
+    background: #0A0B10;
+    /* Solid background for mobile instead of radial gradient */
+  }
+}
+
+.gpu-accelerated {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  /* Force GPU layer */
+}
+
 .premium-shadow {
   box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.7);
 }
