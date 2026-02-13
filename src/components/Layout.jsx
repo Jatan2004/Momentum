@@ -9,6 +9,11 @@ const Layout = ({ children, activeTab, onTabChange, user, onLogout, level, xpPro
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const profileRef = useRef(null);
 
+    // Scroll to top when tab changes
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, [activeTab]);
+
     // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -83,7 +88,10 @@ const Layout = ({ children, activeTab, onTabChange, user, onLogout, level, xpPro
                 <nav className="hidden md:flex items-center">
                     <div className="flex bg-gradient-to-r from-white/10 to-white/5 p-1.5 rounded-2xl border border-white/10">
                         <button
-                            onClick={() => onTabChange('my-streaks')}
+                            onClick={() => {
+                                onTabChange('my-streaks');
+                                window.scrollTo({ top: 0, behavior: 'instant' });
+                            }}
                             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all outline-none focus:outline-none ${activeTab === 'my-streaks' || activeTab === 'social'
                                 ? 'bg-white text-black'
                                 : 'text-secondary hover:text-white hover:bg-white/5'
@@ -93,7 +101,10 @@ const Layout = ({ children, activeTab, onTabChange, user, onLogout, level, xpPro
                             Dashboard
                         </button>
                         <button
-                            onClick={() => onTabChange('analytics')}
+                            onClick={() => {
+                                onTabChange('analytics');
+                                window.scrollTo({ top: 0, behavior: 'instant' });
+                            }}
                             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all outline-none focus:outline-none ${activeTab === 'analytics'
                                 ? 'bg-white text-black'
                                 : 'text-secondary hover:text-white hover:bg-white/5'
@@ -196,7 +207,10 @@ const Layout = ({ children, activeTab, onTabChange, user, onLogout, level, xpPro
                 <div className="grid grid-cols-4 h-18 px-2">
                     <m.button
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => onTabChange('my-streaks')}
+                        onClick={() => {
+                            onTabChange('my-streaks');
+                            window.scrollTo({ top: 0, behavior: 'instant' });
+                        }}
                         className="flex flex-col items-center justify-center gap-1 py-3 transition-colors"
                     >
                         <LayoutGrid
@@ -211,7 +225,10 @@ const Layout = ({ children, activeTab, onTabChange, user, onLogout, level, xpPro
 
                     <m.button
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => onTabChange('analytics')}
+                        onClick={() => {
+                            onTabChange('analytics');
+                            window.scrollTo({ top: 0, behavior: 'instant' });
+                        }}
                         className="flex flex-col items-center justify-center gap-1 py-3 transition-colors"
                     >
                         <TrendingUp
@@ -226,7 +243,10 @@ const Layout = ({ children, activeTab, onTabChange, user, onLogout, level, xpPro
 
                     <m.button
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => onTabChange('settings')}
+                        onClick={() => {
+                            onTabChange('settings');
+                            window.scrollTo({ top: 0, behavior: 'instant' });
+                        }}
                         className="flex flex-col items-center justify-center gap-1 py-3 transition-colors"
                     >
                         <Settings
@@ -241,7 +261,10 @@ const Layout = ({ children, activeTab, onTabChange, user, onLogout, level, xpPro
 
                     <m.button
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => onTabChange('coach')}
+                        onClick={() => {
+                            onTabChange('coach');
+                            window.scrollTo({ top: 0, behavior: 'instant' });
+                        }}
                         className="flex flex-col items-center justify-center gap-1 py-3 transition-colors"
                     >
                         <MessageSquare
