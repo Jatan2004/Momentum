@@ -142,7 +142,7 @@ const StreakCard = ({ id, name, count, longestStreak = 0, brokenHistory = [], on
 
                     <button
                         onClick={handleBreakAction}
-                        className="w-full mt-4 py-3 rounded-xl font-bold transition-all bg-error/10 text-error border border-error/20 active:scale-[0.95] text-[10px] uppercase tracking-widest"
+                        className="w-fit mx-auto mt-4 px-8 py-2.5 rounded-xl font-bold transition-all bg-error/10 text-error border border-error/20 active:scale-[0.95] text-[10px] uppercase tracking-widest"
                     >
                         Break
                     </button>
