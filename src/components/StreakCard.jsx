@@ -97,52 +97,55 @@ const StreakCard = ({ id, name, count, longestStreak = 0, brokenHistory = [], on
                 <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 blur-[40px] rounded-full pointer-events-none" />
 
                 {/* Mobile Horizontal Layout */}
-                <div className="md:hidden flex items-center gap-5 h-full">
-                    {/* Left: Huge Count */}
-                    <div className="flex flex-col items-center justify-center min-w-[80px]">
-                        <span className="text-5xl font-black tabular-nums tracking-tighter leading-none">{count}</span>
-                        <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mt-1">Days</span>
-                    </div>
+                <div className="md:hidden flex flex-col h-full">
+                    <div className="flex items-center gap-5 flex-1">
+                        {/* Left: Huge Count */}
+                        <div className="flex flex-col items-center justify-center min-w-[80px]">
+                            <span className="text-5xl font-black tabular-nums tracking-tighter leading-none">{count}</span>
+                            <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mt-1">Days</span>
+                        </div>
 
-                    {/* Right: Info Area */}
-                    <div className="flex-1 min-w-0 border-l border-white/5 pl-5 py-1">
-                        <div className="flex justify-between items-start mb-2">
-                            <div className="min-w-0 flex-1">
-                                <h3 className="text-xl font-bold text-white mb-0.5 truncate leading-tight">{name}</h3>
-                                <div className="flex items-center gap-1.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_rgba(50,215,75,0.5)]" />
-                                    <p className="text-[8px] text-secondary font-bold uppercase tracking-widest whitespace-nowrap">Live</p>
+                        {/* Right: Info Area */}
+                        <div className="flex-1 min-w-0 border-l border-white/5 pl-5 py-1">
+                            <div className="flex justify-between items-start mb-2">
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="text-xl font-bold text-white mb-0.5 truncate leading-tight">{name}</h3>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_rgba(50,215,75,0.5)]" />
+                                        <p className="text-[8px] text-secondary font-bold uppercase tracking-widest whitespace-nowrap">Live</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 ml-2">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowDeleteConfirm(true);
+                                        }}
+                                        className="w-8 h-8 glass rounded-lg flex items-center justify-center text-secondary hover:text-error transition-all"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                    <div className="w-8 h-8 glass rounded-lg flex items-center justify-center text-accent">
+                                        <Flame size={14} />
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex gap-2 ml-2">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowDeleteConfirm(true);
-                                    }}
-                                    className="w-8 h-8 glass rounded-lg flex items-center justify-center text-secondary hover:text-error transition-all"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
-                                <div className="w-8 h-8 glass rounded-lg flex items-center justify-center text-accent">
-                                    <Flame size={14} />
+
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-[8px] text-secondary font-bold uppercase tracking-widest leading-none mb-1">Peak</p>
+                                    <p className="text-sm font-black text-accent leading-none">{longestStreak}d</p>
                                 </div>
                             </div>
                         </div>
-
-                        <div className="flex items-center justify-between mt-auto">
-                            <div>
-                                <p className="text-[8px] text-secondary font-bold uppercase tracking-widest leading-none mb-1">Peak</p>
-                                <p className="text-sm font-black text-accent leading-none">{longestStreak}d</p>
-                            </div>
-                            <button
-                                onClick={handleBreakAction}
-                                className="px-4 py-2 rounded-xl font-bold transition-all bg-error/10 text-error border border-error/20 active:scale-[0.95] text-[9px] uppercase tracking-widest"
-                            >
-                                Reset
-                            </button>
-                        </div>
                     </div>
+
+                    <button
+                        onClick={handleBreakAction}
+                        className="w-full mt-4 py-3 rounded-xl font-bold transition-all bg-error/10 text-error border border-error/20 active:scale-[0.95] text-[10px] uppercase tracking-widest"
+                    >
+                        Break
+                    </button>
                 </div>
 
                 {/* Desktop Layout (Kept Original) */}
