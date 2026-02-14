@@ -90,80 +90,132 @@ const StreakCard = ({ id, name, count, longestStreak = 0, brokenHistory = [], on
                     opacity: 1,
                     scale: isBreaking ? [1, 1.02, 0.98, 1] : 1
                 }}
-                className={`glass rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-8 relative overflow-hidden group hover:border-accent/40 transition-all duration-500 premium-shadow cursor-pointer flex flex-col h-full min-h-[220px] md:min-h-[320px] gpu-accelerated ${isBreaking ? 'opacity-50' : ''}`}
+                className={`glass rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-8 relative overflow-hidden group hover:border-accent/40 transition-all duration-500 premium-shadow cursor-pointer flex flex-col md:flex-col h-full min-h-[160px] md:min-h-[320px] gpu-accelerated ${isBreaking ? 'opacity-50' : ''}`}
                 onClick={() => setIsHistoryOpen(true)}
             >
                 {/* Background decoration */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 blur-[40px] rounded-full pointer-events-none" />
 
-                <div className="flex justify-between items-start mb-8">
-                    <div className="min-w-0 flex-1">
-                        <h3 className="text-base md:text-3xl font-bold text-white mb-1 truncate">{name}</h3>
-                        <div className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_rgba(50,215,75,0.5)]" />
-                            <p className="text-[8px] md:text-[11px] text-secondary font-bold uppercase tracking-widest whitespace-nowrap">Live</p>
+                {/* Mobile Horizontal Layout */}
+                <div className="md:hidden flex items-center gap-5 h-full">
+                    {/* Left: Huge Count */}
+                    <div className="flex flex-col items-center justify-center min-w-[80px]">
+                        <span className="text-5xl font-black tabular-nums tracking-tighter leading-none">{count}</span>
+                        <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mt-1">Days</span>
+                    </div>
+
+                    {/* Right: Info Area */}
+                    <div className="flex-1 min-w-0 border-l border-white/5 pl-5 py-1">
+                        <div className="flex justify-between items-start mb-2">
+                            <div className="min-w-0 flex-1">
+                                <h3 className="text-xl font-bold text-white mb-0.5 truncate leading-tight">{name}</h3>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_rgba(50,215,75,0.5)]" />
+                                    <p className="text-[8px] text-secondary font-bold uppercase tracking-widest whitespace-nowrap">Live</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-2 ml-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowDeleteConfirm(true);
+                                    }}
+                                    className="w-8 h-8 glass rounded-lg flex items-center justify-center text-secondary hover:text-error transition-all"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                                <div className="w-8 h-8 glass rounded-lg flex items-center justify-center text-accent">
+                                    <Flame size={14} />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-auto">
+                            <div>
+                                <p className="text-[8px] text-secondary font-bold uppercase tracking-widest leading-none mb-1">Peak</p>
+                                <p className="text-sm font-black text-accent leading-none">{longestStreak}d</p>
+                            </div>
+                            <button
+                                onClick={handleBreakAction}
+                                className="px-4 py-2 rounded-xl font-bold transition-all bg-error/10 text-error border border-error/20 active:scale-[0.95] text-[9px] uppercase tracking-widest"
+                            >
+                                Reset
+                            </button>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                </div>
+
+                {/* Desktop Layout (Kept Original) */}
+                <div className="hidden md:block h-full flex-col">
+                    <div className="flex justify-between items-start mb-8">
+                        <div className="min-w-0 flex-1">
+                            <h3 className="text-3xl font-bold text-white mb-1 truncate">{name}</h3>
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_rgba(50,215,75,0.5)]" />
+                                <p className="text-[11px] text-secondary font-bold uppercase tracking-widest whitespace-nowrap">Live</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowDeleteConfirm(true);
+                                }}
+                                className="w-10 h-10 glass rounded-xl flex items-center justify-center text-secondary hover:text-error hover:bg-error/10 transition-all"
+                                title="Delete Streak"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                            <div className="w-12 h-12 glass rounded-2xl flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
+                                <Flame size={24} />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 flex flex-col">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-baseline gap-3">
+                                <span className="text-7xl font-black tabular-nums tracking-tighter">{count}</span>
+                                <span className="text-2xl font-bold text-secondary">Days</span>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] text-secondary font-bold uppercase tracking-widest mb-1">Peak</p>
+                                <p className="text-xl font-black text-accent">{longestStreak}<span className="text-[8px] ml-0.5">d</span></p>
+                            </div>
+                        </div>
+
+                        {lastBroken ? (
+                            <div className="flex items-center gap-4 bg-white/5 border border-white/5 p-4 rounded-2xl backdrop-blur-md mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="w-8 h-8 rounded-lg bg-error/10 flex items-center justify-center text-error">
+                                    <AlertCircle size={16} />
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-bold text-secondary uppercase tracking-widest mb-0.5">Last Reset</p>
+                                    <p className="text-xs font-bold text-white">{format(new Date(lastBroken.date), 'MMM do, yyyy')}</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-4 bg-accent/5 border border-accent/10 p-4 rounded-2xl backdrop-blur-md mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
+                                    <Sparkles size={16} />
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-bold text-accent uppercase tracking-widest mb-0.5">Fresh Start</p>
+                                    <p className="text-xs font-bold text-white/90">Your journey begins today.</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mt-auto">
                         <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setShowDeleteConfirm(true);
-                            }}
-                            className="w-8 h-8 md:w-10 md:h-10 glass rounded-lg md:rounded-xl flex items-center justify-center text-secondary hover:text-error hover:bg-error/10 transition-all"
-                            title="Delete Streak"
+                            onClick={handleBreakAction}
+                            className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-bold transition-all bg-error/10 text-error border border-error/20 hover:bg-error hover:text-white premium-shadow active:scale-[0.98]"
                         >
-                            <Trash2 size={14} className="md:w-[18px] md:h-[18px]" />
+                            <History size={18} />
+                            <span className="text-[11px] uppercase tracking-widest whitespace-nowrap">Break Streak</span>
                         </button>
-                        <div className="w-9 h-9 md:w-12 md:h-12 glass rounded-xl md:rounded-2xl flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
-                            <Flame size={18} className="md:w-[24px] md:h-[24px]" />
-                        </div>
                     </div>
-                </div>
-
-                <div className="flex-1 flex flex-col">
-                    <div className="flex items-center justify-between mb-6 md:mb-8">
-                        <div className="flex items-baseline gap-1.5 md:gap-3">
-                            <span className="text-3xl md:text-7xl font-black tabular-nums tracking-tighter">{count}</span>
-                            <span className="text-xs md:text-2xl font-bold text-secondary">Days</span>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-[7px] md:text-[10px] text-secondary font-bold uppercase tracking-widest mb-0.5 md:mb-1">Peak</p>
-                            <p className="text-sm md:text-xl font-black text-accent">{longestStreak}<span className="text-[8px] ml-0.5">d</span></p>
-                        </div>
-                    </div>
-
-                    {lastBroken ? (
-                        <div className="flex items-center gap-4 bg-white/5 border border-white/5 p-4 rounded-2xl backdrop-blur-md mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <div className="w-8 h-8 rounded-lg bg-error/10 flex items-center justify-center text-error">
-                                <AlertCircle size={16} />
-                            </div>
-                            <div>
-                                <p className="text-[9px] font-bold text-secondary uppercase tracking-widest mb-0.5">Last Reset</p>
-                                <p className="text-xs font-bold text-white">{format(new Date(lastBroken.date), 'MMM do, yyyy')}</p>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-4 bg-accent/5 border border-accent/10 p-4 rounded-2xl backdrop-blur-md mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
-                                <Sparkles size={16} />
-                            </div>
-                            <div>
-                                <p className="text-[9px] font-bold text-accent uppercase tracking-widest mb-0.5">Fresh Start</p>
-                                <p className="text-xs font-bold text-white/90">Your journey begins today.</p>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                <div className="mt-auto">
-                    <button
-                        onClick={handleBreakAction}
-                        className="w-full flex items-center justify-center gap-2 md:gap-3 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold transition-all bg-error/10 text-error border border-error/20 hover:bg-error hover:text-white premium-shadow active:scale-[0.98]"
-                    >
-                        <History size={14} className="md:w-[18px] md:h-[18px]" />
-                        <span className="text-[9px] md:text-[11px] uppercase tracking-widest whitespace-nowrap">Break Streak</span>
-                    </button>
                 </div>
             </m.div>
 

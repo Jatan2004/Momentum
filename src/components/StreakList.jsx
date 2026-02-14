@@ -20,7 +20,7 @@ const StreakList = ({ streaks, onBreak, onDelete }) => {
     });
 
     return (
-        <div className={`${sortedStreaks.length === 1 ? 'flex justify-center' : 'grid grid-cols-2 lg:grid-cols-2 gap-4 md:gap-8 lg:gap-12 grid-auto-rows-fr items-stretch'}`}>
+        <div className={`${sortedStreaks.length === 1 ? 'flex justify-center' : 'grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-12 grid-auto-rows-fr items-stretch'}`}>
             {sortedStreaks.map((streak) => (
                 <StreakCard
                     key={streak.id}
