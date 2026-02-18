@@ -182,7 +182,7 @@ export const useSocialSystem = () => {
 
             streakResponse.documents.forEach(streak => {
                 // Apply activity filter if defined (case-insensitive)
-                if (activityFilter && streak.name.toLowerCase() !== activityFilter.toLowerCase()) {
+                if (activityFilter && streak.name.trim().toLowerCase() !== activityFilter.trim().toLowerCase()) {
                     return;
                 }
 

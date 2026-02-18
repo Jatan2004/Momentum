@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useMemo, useState } from 'react';
-import { motion as m } from 'framer-motion';
+import { motion as m, AnimatePresence } from 'framer-motion';
 import { BarChart2, TrendingUp, PieChart, Calendar, ChevronUp, ChevronDown, Activity, Zap, Download } from 'lucide-react';
 import { format, subDays, startOfDay, differenceInDays, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday, addMonths, subMonths } from 'date-fns';
 import { Users, Plus, UserPlus, Trophy, Flame, ChevronRight, Copy, Check, Hash, Loader2, RefreshCw, X, History, LogOut, Trash2, AlertTriangle, ChevronLeft } from 'lucide-react';
@@ -8,6 +8,7 @@ import { Users, Plus, UserPlus, Trophy, Flame, ChevronRight, Copy, Check, Hash, 
 const Analytics = ({ streaks }) => {
     const [timeRange, setTimeRange] = useState(30);
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [hoveredPoint, setHoveredPoint] = useState(null); // { x: 0, y: 0, data: {} }
 
     const breakDates = useMemo(() => {
         const dates = new Map();
@@ -39,11 +40,15 @@ const Analytics = ({ streaks }) => {
 
         // Process all streak histories to build activity map
         streaks.forEach(streak => {
-            // Count current active days
+            // Count current active days and add cumulative momentum
             if (streak.count > 0) {
                 for (let i = 0; i < streak.count; i++) {
                     const date = format(subDays(today, i), 'yyyy-MM-dd');
-                    activityMap.set(date, (activityMap.get(date) || 0) + 1);
+                    const existing = activityMap.get(date) || { count: 0, momentum: 0 };
+                    activityMap.set(date, {
+                        count: existing.count + 1,
+                        momentum: existing.momentum + (streak.count - i)
+                    });
                 }
             }
 
@@ -55,7 +60,11 @@ const Analytics = ({ streaks }) => {
 
                     for (let i = 1; i <= streakLength; i++) {
                         const date = format(subDays(breakDate, i), 'yyyy-MM-dd');
-                        activityMap.set(date, (activityMap.get(date) || 0) + 1);
+                        const existing = activityMap.get(date) || { count: 0, momentum: 0 };
+                        activityMap.set(date, {
+                            count: existing.count + 1,
+                            momentum: existing.momentum + (streakLength - (i - 1))
+                        });
                     }
                 });
             }
@@ -64,28 +73,36 @@ const Analytics = ({ streaks }) => {
         // Generate grid for last 365 days
         return Array.from({ length: days }).map((_, i) => {
             const date = format(subDays(today, days - 1 - i), 'yyyy-MM-dd');
-            const count = activityMap.get(date) || 0;
+            const data = activityMap.get(date) || { count: 0, momentum: 0 };
             return {
                 date,
-                active: count > 0,
-                momentum: count, // Added momentum for chart mapping
-                level: count === 0 ? 'none' : count === 1 ? 'low' : count === 2 ? 'medium' : count >= 3 ? 'high' : 'very-high'
+                active: data.count > 0,
+                momentum: data.momentum,
+                activeCount: data.count,
+                level: data.count === 0 ? 'none' : data.count === 1 ? 'low' : data.count === 2 ? 'medium' : data.count >= 3 ? 'high' : 'very-high'
             };
         });
     }, [streaks]);
 
-    // Calculate real weekly average
+    // Dynamic scaling for chart based on visible data
+    const chartMax = useMemo(() => {
+        const visibleData = gridData.slice(-timeRange);
+        const max = Math.max(...visibleData.map(d => d.momentum));
+        return Math.max(10, Math.ceil(max * 1.1)); // Buffer
+    }, [gridData, timeRange]);
+
+    // Calculate real weekly average momentum
     const weeklyStats = useMemo(() => {
         const last7Days = gridData.slice(-7);
         const previous7Days = gridData.slice(-14, -7);
 
-        const currentWeekActivity = last7Days.filter(d => d.active).length;
-        const previousWeekActivity = previous7Days.filter(d => d.active).length;
+        const currentWeekMomentum = last7Days.reduce((acc, d) => acc + d.momentum, 0);
+        const previousWeekMomentum = previous7Days.reduce((acc, d) => acc + d.momentum, 0);
 
-        const average = currentWeekActivity;
-        const change = previousWeekActivity > 0
-            ? Math.round(((currentWeekActivity - previousWeekActivity) / previousWeekActivity) * 100)
-            : currentWeekActivity > 0 ? 100 : 0;
+        const average = Math.round(currentWeekMomentum / 7);
+        const change = previousWeekMomentum > 0
+            ? Math.round(((currentWeekMomentum - previousWeekMomentum) / previousWeekMomentum) * 100)
+            : currentWeekMomentum > 0 ? 100 : 0;
 
         return { average, change };
     }, [gridData]);
@@ -369,11 +386,11 @@ const Analytics = ({ streaks }) => {
                     </div>
 
                     {/* Timeline Chart */}
-                    <div className="relative h-64">
+                    <div className="relative h-64 mb-4 overflow-hidden touch-none select-none">
                         {/* Y-axis labels */}
                         <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-right pr-4">
                             {[...Array(5)].map((_, i) => {
-                                const value = Math.ceil((peakMomentum / 4) * (4 - i));
+                                const value = Math.ceil((chartMax / 4) * (4 - i));
                                 return (
                                     <span key={i} className="text-xs text-secondary font-bold">
                                         {value}
@@ -392,7 +409,12 @@ const Analytics = ({ streaks }) => {
                             </div>
 
                             {/* Line chart */}
-                            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <svg
+                                className="absolute inset-0 w-full h-full"
+                                viewBox="0 0 100 100"
+                                preserveAspectRatio="none"
+                                style={{ touchAction: 'none' }}
+                            >
                                 <defs>
                                     <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                         <stop offset="0%" stopColor="#5E5CE6" stopOpacity="0.3" />
@@ -413,7 +435,7 @@ const Analytics = ({ streaks }) => {
                                     transition={{ duration: 1 }}
                                     d={`M 0,100 ${gridData.slice(-timeRange).map((day, i) => {
                                         const x = (i / (timeRange - 1)) * 100;
-                                        const y = peakMomentum > 0 ? ((1 - (day.momentum / peakMomentum)) * 100) : 100;
+                                        const y = chartMax > 0 ? ((1 - (day.momentum / chartMax)) * 100) : 100;
                                         return `L ${x},${y}`;
                                     }).join(' ')} L 100,100 Z`}
                                     fill="url(#areaGradient)"
@@ -425,9 +447,9 @@ const Analytics = ({ streaks }) => {
                                     initial={{ pathLength: 0 }}
                                     animate={{ pathLength: 1 }}
                                     transition={{ duration: 1.5, ease: "easeInOut" }}
-                                    d={`M 0,${peakMomentum > 0 ? ((1 - (gridData.slice(-timeRange)[0]?.momentum / peakMomentum)) * 100) : 100} ${gridData.slice(-timeRange).map((day, i) => {
+                                    d={`M 0,${chartMax > 0 ? ((1 - (gridData.slice(-timeRange)[0]?.momentum / chartMax)) * 100) : 100} ${gridData.slice(-timeRange).map((day, i) => {
                                         const x = (i / (timeRange - 1)) * 100;
-                                        const y = peakMomentum > 0 ? ((1 - (day.momentum / peakMomentum)) * 100) : 100;
+                                        const y = chartMax > 0 ? ((1 - (day.momentum / chartMax)) * 100) : 100;
                                         return `L ${x},${y}`;
                                     }).join(' ')}`}
                                     stroke="url(#lineGradient)"
@@ -436,14 +458,102 @@ const Analytics = ({ streaks }) => {
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                 />
+
+                                {/* Interactive Overlay */}
+                                {gridData.slice(-timeRange).map((day, i) => {
+                                    const x = (i / (timeRange - 1)) * 100;
+                                    const width = 100 / (timeRange - 1);
+                                    return (
+                                        <rect
+                                            key={i}
+                                            x={x - width / 2}
+                                            y="0"
+                                            width={width}
+                                            height="100"
+                                            fill="transparent"
+                                            onMouseEnter={() => {
+                                                const y = chartMax > 0 ? ((1 - (day.momentum / chartMax)) * 100) : 100;
+                                                setHoveredPoint({ x, y, data: day });
+                                            }}
+                                            onTouchStart={(e) => {
+                                                e.stopPropagation();
+                                                const y = chartMax > 0 ? ((1 - (day.momentum / chartMax)) * 100) : 100;
+                                                setHoveredPoint({ x, y, data: day });
+                                            }}
+                                            onTouchMove={(e) => {
+                                                e.stopPropagation();
+                                                const y = chartMax > 0 ? ((1 - (day.momentum / chartMax)) * 100) : 100;
+                                                setHoveredPoint({ x, y, data: day });
+                                            }}
+                                            onMouseLeave={() => setHoveredPoint(null)}
+                                            className="cursor-crosshair"
+                                        />
+                                    );
+                                })}
+
+                                {/* Hover Indicator */}
+                                {hoveredPoint && (
+                                    <m.g
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                    >
+                                        <line
+                                            x1={hoveredPoint.x}
+                                            y1="0"
+                                            x2={hoveredPoint.x}
+                                            y2="100"
+                                            stroke="white"
+                                            strokeWidth="0.5"
+                                            strokeDasharray="2,2"
+                                            className="opacity-20"
+                                        />
+                                        <circle
+                                            cx={hoveredPoint.x}
+                                            cy={hoveredPoint.y}
+                                            r="4"
+                                            fill="#A855F7"
+                                            className="shadow-[0_0_10px_#A855F7]"
+                                        />
+                                    </m.g>
+                                )}
                             </svg>
+
+                            {/* Tooltip */}
+                            <AnimatePresence>
+                                {hoveredPoint && (
+                                    <m.div
+                                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                        style={{
+                                            left: `${Math.max(25, Math.min(75, hoveredPoint.x))}%`,
+                                            top: `0`,
+                                            transform: `translate(-50%, -120%)`,
+                                        }}
+                                        className="absolute z-30 pointer-events-none sm:top-auto sm:style-placeholder"
+                                    /* On desktop, we can use the dynamic Y, but on mobile let's keep it pinned to top of chart to avoid finger occlusion */
+                                    >
+                                        <div className="glass px-4 py-2 rounded-xl premium-shadow border border-white/10 whitespace-nowrap">
+                                            <p className="text-[10px] text-secondary font-black uppercase tracking-widest mb-1">
+                                                {format(parseISO(hoveredPoint.data.date), 'MMM dd, yyyy')}
+                                            </p>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                                                <p className="text-sm font-black text-white">
+                                                    {hoveredPoint.data.momentum} <span className="text-[10px] text-secondary">Streak Days</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </m.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
                     <div className="mt-8 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between gap-6">
                         <div className="grid grid-cols-2 md:flex md:items-center gap-6">
                             <div>
-                                <p className="text-[10px] text-secondary font-bold uppercase tracking-widest mb-1">Weekly Avg</p>
+                                <p className="text-[10px] text-secondary font-bold uppercase tracking-widest mb-1">Current Momentum</p>
                                 <div className="flex items-center gap-2">
                                     <h6 className="text-xl md:text-2xl font-black">{weeklyStats.average}</h6>
                                     <p className={`text-[10px] font-bold uppercase ${weeklyStats.change >= 0 ? 'text-success' : 'text-error'}`}>

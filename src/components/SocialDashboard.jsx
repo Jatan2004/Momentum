@@ -39,7 +39,7 @@ const SocialDashboard = ({ onBack }) => {
         leaderboard.forEach(player => {
             player.streaks?.forEach(streak => {
                 // If group has an activity filter, only count breaks for that activity
-                if (activeGroup?.activity && streak.name.toLowerCase() !== activeGroup.activity.toLowerCase()) {
+                if (activeGroup?.activity && streak.name.trim().toLowerCase() !== activeGroup.activity.trim().toLowerCase()) {
                     return;
                 }
 
@@ -627,15 +627,19 @@ const SocialDashboard = ({ onBack }) => {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[11px] text-secondary font-bold uppercase tracking-[0.2em] ml-4">Focus Activity (Optional)</label>
+                                        <div className="flex justify-between items-center ml-4">
+                                            <label className="text-[11px] text-secondary font-bold uppercase tracking-[0.2em]">Focus Activity</label>
+                                            <span className="text-[8px] bg-accent/20 text-accent px-1.5 py-0.5 rounded font-black uppercase tracking-widest">Required</span>
+                                        </div>
                                         <input
                                             type="text"
-                                            placeholder="e.g., Coding, Gym, Reading"
+                                            placeholder="e.g., Coding, Workout, Reading"
                                             className="w-full bg-surface-lighter rounded-2xl py-4 px-6 text-white border border-white/5 focus:border-accent outline-none"
                                             value={newGroupActivity}
                                             onChange={(e) => setNewGroupActivity(e.target.value)}
+                                            required
                                         />
-                                        <p className="text-[9px] text-secondary/50 ml-4 italic">If set, only streaks with this exact name will count toward the leaderboard.</p>
+                                        <p className="text-[9px] text-secondary/50 ml-4 italic">The Arena will specifically track and filter for this activity only.</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4 mt-8">
@@ -754,7 +758,7 @@ const SocialDashboard = ({ onBack }) => {
                             <div className="p-8 md:p-10 overflow-y-auto custom-scrollbar space-y-8">
                                 {selectedPlayer.streaks && selectedPlayer.streaks.length > 0 ? (
                                     selectedPlayer.streaks
-                                        .filter(s => !activeGroup?.activity || s.name.toLowerCase() === activeGroup.activity.toLowerCase())
+                                        .filter(s => !activeGroup?.activity || s.name.trim().toLowerCase() === activeGroup.activity.trim().toLowerCase())
                                         .map((streak, idx) => (
                                             <div key={idx} className="space-y-6">
                                                 <div className="flex justify-between items-end">
