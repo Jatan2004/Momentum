@@ -3,14 +3,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSocialSystem } from '../hooks/useSocialSystem';
 import { useAuth } from '../hooks/useAuth';
 import { useStreakSystem } from '../hooks/useStreakSystem';
-import { Users, Plus, UserPlus, Trophy, Flame, ChevronRight, ChevronLeft, Copy, Check, Hash, Loader2, RefreshCw, X, Calendar, History, LogOut, Trash2, AlertTriangle, Zap, ArrowLeft } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday, addMonths, subMonths, isValid } from 'date-fns';
+import { Users, Plus, UserPlus, Trophy, Flame, ChevronRight, ChevronLeft, Copy, Check, Hash, Loader2, X, Calendar, LogOut, Trash2, AlertTriangle, Zap, ArrowLeft } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday, addMonths, subMonths, isValid, isAfter, startOfDay } from 'date-fns';
 import { motion as m, AnimatePresence } from 'framer-motion';
 import { getAvatarUrl } from '../utils/avatar';
 
 const SocialDashboard = ({ onBack }) => {
     const { groups, isLoading, createGroup, joinGroup, getGroupLeaderboard, leaveGroup, deleteGroup } = useSocialSystem();
-    const { streaks, breakStreak } = useStreakSystem();
+    const { streaks } = useStreakSystem();
     const { user } = useAuth();
     const [activeGroupId, setActiveGroupId] = useState(null);
     const [leaderboard, setLeaderboard] = useState([]);
@@ -128,91 +128,8 @@ const SocialDashboard = ({ onBack }) => {
         setActionLoading(false);
     };
 
-    const [isBreaking, setIsBreaking] = useState(false);
-
-    const handleBreakInArena = async (activityName) => {
-        if (!activityName) return;
-        const streak = streaks.find(s => s.name.toLowerCase() === activityName.toLowerCase());
-        if (streak) {
-            setIsBreaking(true);
-            setActionLoading(true);
-
-            // Haptic feedback for mobile
-            if ('vibrate' in navigator) {
-                navigator.vibrate([200, 50, 100, 50, 200]);
-            }
-
-            // Wait for impact animation (Faster)
-            await new Promise(resolve => setTimeout(resolve, 400));
-
-            await breakStreak(streak.$id);
-            // Refresh leaderboard after break
-            if (activeGroupId) {
-                const data = await getGroupLeaderboard(activeGroupId);
-                setLeaderboard(data);
-            }
-            setActionLoading(false);
-            setTimeout(() => setIsBreaking(false), 300);
-        } else {
-            alert(`You don't have an active "${activityName}" streak to break! Create one in the Personal tab first.`);
-        }
-    };
-
     return (
         <>
-            {/* Full Screen Shatter Overlay (Arena Version) */}
-            <AnimatePresence>
-                {isBreaking && (
-                    <m.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[200] pointer-events-none flex items-center justify-center overflow-hidden"
-                    >
-                        {/* The Impact Crack (Single SVG Layer for Arena) */}
-                        <m.svg
-                            viewBox="0 0 100 100"
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: [0.8, 1.1, 1], opacity: 1 }}
-                            transition={{ duration: 0.2 }}
-                            className="absolute inset-0 w-full h-full text-white/30 drop-shadow-[0_0_30px_rgba(255,255,255,0.15)]"
-                        >
-                            <path
-                                d="M50 50 L0 0 M50 50 L100 0 M50 50 L100 100 M50 50 L0 100 M50 50 L0 50 M50 50 L100 50 M50 50 L50 0 M50 50 L50 100"
-                                stroke="currentColor"
-                                strokeWidth="0.8"
-                                fill="none"
-                            />
-                            <path
-                                d="M50 50 L20 10 M50 50 L80 10 M50 50 L100 30 M50 50 L100 70 M50 50 L80 90 M50 50 L20 90 M50 50 L0 70 M50 50 L0 30"
-                                stroke="currentColor"
-                                strokeWidth="0.4"
-                                fill="none"
-                            />
-                        </m.svg>
-
-                        {/* Intense Screen Shake */}
-                        <m.div
-                            animate={{
-                                x: [0, -30, 30, -30, 30, 0],
-                                y: [0, -20, 20, -20, 20, 0]
-                            }}
-                            transition={{ duration: 0.25 }}
-                            className="absolute inset-0"
-                        />
-
-                        <m.div
-                            initial={{ scale: 0.5, opacity: 0 }}
-                            animate={{ scale: [1, 1.5, 1.2], opacity: [0, 1, 0] }}
-                            transition={{ duration: 0.4 }}
-                            className="text-white text-[10vw] font-black italic tracking-tight relative z-10"
-                        >
-                            LOST
-                        </m.div>
-                    </m.div>
-                )}
-            </AnimatePresence>
-
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
@@ -358,41 +275,12 @@ const SocialDashboard = ({ onBack }) => {
                                 <div className="space-y-4 relative z-10">
                                     {leaderboard.map((player, index) => {
                                         const isCurrentUser = player.userId === user?.$id;
-                                        const animating = isCurrentUser && isBreaking;
-
                                         return (
                                             <m.div
                                                 key={index}
                                                 onClick={() => setSelectedPlayer(player)}
-                                                animate={{
-                                                    x: animating ? [0, -10, 10, -10, 10, 0] : 0,
-                                                    scale: animating ? [1, 1.05, 1] : 1,
-                                                    backgroundColor: animating ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.05)'
-                                                }}
-                                                transition={{ duration: 0.4 }}
-                                                className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 md:p-5 border border-white/5 rounded-[1.5rem] hover:bg-white/10 transition-all cursor-pointer group/item gap-4 md:gap-6 relative overflow-hidden ${animating ? 'border-error/50' : ''}`}
+                                                className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 md:p-5 border border-white/5 rounded-[1.5rem] hover:bg-white/10 transition-all cursor-pointer group/item gap-4 md:gap-6 relative overflow-hidden`}
                                             >
-                                                {/* Particles for Arena Row */}
-                                                <AnimatePresence>
-                                                    {animating && [...Array(6)].map((_, i) => (
-                                                        <m.div
-                                                            key={i}
-                                                            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                                                            animate={{
-                                                                x: (Math.random() - 0.5) * 300,
-                                                                y: (Math.random() - 0.5) * 200,
-                                                                opacity: 0,
-                                                                scale: 0,
-                                                                rotate: Math.random() * 360
-                                                            }}
-                                                            className="absolute left-1/2 top-1/2 text-error pointer-events-none z-50"
-                                                            transition={{ duration: 0.6 }}
-                                                        >
-                                                            <Flame size={16} fill="currentColor" />
-                                                        </m.div>
-                                                    ))}
-                                                </AnimatePresence>
-
                                                 <div className="flex items-center gap-4 md:gap-6 relative z-10">
                                                     <div className="flex flex-col items-center justify-center">
                                                         <span className={`text-xl md:text-2xl font-black italic leading-none ${index === 0 ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.3)]' : index === 1 ? 'text-zinc-400' : index === 2 ? 'text-amber-600' : 'text-secondary/30'}`}>
@@ -411,61 +299,43 @@ const SocialDashboard = ({ onBack }) => {
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center justify-end gap-x-8 md:gap-x-12 px-2 sm:px-0 relative z-10">
-                                                    {/* Action Button for Current User */}
-                                                    {player.userId === user?.$id && activeGroup?.activity && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleBreakInArena(activeGroup.activity);
-                                                            }}
-                                                            disabled={actionLoading}
-                                                            className="flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-error/10 text-error rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-error hover:text-white transition-all border border-error/20"
-                                                            title="Quick Break"
-                                                        >
-                                                            <RefreshCw size={12} className={actionLoading ? 'animate-spin' : ''} />
-                                                            Break
-                                                        </button>
-                                                    )}
-
-                                                    <div className="flex items-center gap-3 md:gap-4 ml-auto sm:ml-0">
-                                                        {!isCurrentUser && (
-                                                            <div className="flex items-center gap-2 mr-4 md:mr-8 border-r border-white/5 pr-4 md:pr-8">
-                                                                <m.button
-                                                                    whileHover={{ scale: 1.1 }}
-                                                                    whileTap={{ scale: 0.9 }}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        if ('vibrate' in navigator) navigator.vibrate(100);
-                                                                    }}
-                                                                    className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white/5 flex items-center justify-center text-secondary hover:text-accent hover:bg-accent/10 transition-all border border-white/5"
-                                                                    title="Nudge"
-                                                                >
-                                                                    <Zap size={14} strokeWidth={3} className="md:w-4 md:h-4" />
-                                                                </m.button>
-                                                                <m.button
-                                                                    whileHover={{ scale: 1.1 }}
-                                                                    whileTap={{ scale: 0.9 }}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                    }}
-                                                                    className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white/5 flex items-center justify-center text-secondary hover:text-success hover:bg-success/10 transition-all border border-white/5"
-                                                                    title="Flame"
-                                                                >
-                                                                    <Flame size={14} strokeWidth={3} className="md:w-4 md:h-4" />
-                                                                </m.button>
-                                                            </div>
-                                                        )}
-                                                        <div>
-                                                            <p className="text-[8px] md:text-[9px] text-secondary font-bold uppercase tracking-widest mb-1 leading-none text-center">Peak</p>
-                                                            <p className="font-black text-sm md:text-lg text-white text-center">{player.peakStreak}<span className="text-[9px] ml-0.5">d</span></p>
+                                                <div className="flex items-center gap-3 md:gap-4 ml-auto sm:ml-0 relative z-10">
+                                                    {!isCurrentUser && (
+                                                        <div className="flex items-center gap-2 mr-4 md:mr-8 border-r border-white/5 pr-4 md:pr-8">
+                                                            <m.button
+                                                                whileHover={{ scale: 1.1 }}
+                                                                whileTap={{ scale: 0.9 }}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if ('vibrate' in navigator) navigator.vibrate(100);
+                                                                }}
+                                                                className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white/5 flex items-center justify-center text-secondary hover:text-accent hover:bg-accent/10 transition-all border border-white/5"
+                                                                title="Nudge"
+                                                            >
+                                                                <Zap size={14} strokeWidth={3} className="md:w-4 md:h-4" />
+                                                            </m.button>
+                                                            <m.button
+                                                                whileHover={{ scale: 1.1 }}
+                                                                whileTap={{ scale: 0.9 }}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                }}
+                                                                className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white/5 flex items-center justify-center text-secondary hover:text-success hover:bg-success/10 transition-all border border-white/5"
+                                                                title="Flame"
+                                                            >
+                                                                <Flame size={14} strokeWidth={3} className="md:w-4 md:h-4" />
+                                                            </m.button>
                                                         </div>
-                                                        <div className="flex flex-col items-center">
-                                                            <p className="text-[8px] md:text-[9px] text-accent font-bold uppercase tracking-widest mb-1 leading-none">Momentum</p>
-                                                            <div className="flex items-center gap-1.5">
-                                                                <Flame size={14} className="text-success" />
-                                                                <p className="text-xl md:text-3xl font-black text-white leading-none tabular-nums">{player.totalMomentum}</p>
-                                                            </div>
+                                                    )}
+                                                    <div>
+                                                        <p className="text-[8px] md:text-[9px] text-secondary font-bold uppercase tracking-widest mb-1 leading-none text-center">Peak</p>
+                                                        <p className="font-black text-sm md:text-lg text-white text-center">{player.peakStreak}<span className="text-[9px] ml-0.5">d</span></p>
+                                                    </div>
+                                                    <div className="flex flex-col items-center">
+                                                        <p className="text-[8px] md:text-[9px] text-accent font-bold uppercase tracking-widest mb-1 leading-none">Momentum</p>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <Flame size={14} className="text-success" />
+                                                            <p className="text-xl md:text-3xl font-black text-white leading-none tabular-nums">{player.totalMomentum}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -525,16 +395,18 @@ const SocialDashboard = ({ onBack }) => {
                                                 const breakers = groupBreakMap.get(dateKey);
                                                 const isCurrentMonth = isSameMonth(day, monthStart);
                                                 const isTodayDate = isToday(day);
+                                                const isFuture = isAfter(startOfDay(day), startOfDay(new Date()));
 
                                                 return (
                                                     <div
                                                         key={idx}
                                                         className={`aspect-square rounded-xl md:rounded-[1.25rem] flex flex-col items-center justify-center relative transition-all group overflow-hidden border ${!isCurrentMonth ? 'opacity-20 pointer-events-none' : ''
                                                             } ${breakers ? 'bg-error/10 border-error/20 text-error shadow-[0_0_15px_rgba(255,69,58,0.1)]' :
-                                                                'bg-white/5 border-white/5 hover:border-white/10'
+                                                                isFuture ? 'bg-white/5 border-white/5 hover:border-white/10' :
+                                                                    'bg-success/10 border-success/20 text-success'
                                                             } ${isTodayDate ? 'ring-2 ring-white/20' : ''}`}
                                                     >
-                                                        <span className={`text-[10px] md:text-xs font-black mb-0.5 ${breakers ? 'text-error' : 'text-secondary/40'}`}>
+                                                        <span className={`text-[10px] md:text-xs font-black mb-0.5 ${breakers ? 'text-error' : isFuture ? 'text-secondary/40' : 'text-success'}`}>
                                                             {format(day, 'd')}
                                                         </span>
 
@@ -565,8 +437,8 @@ const SocialDashboard = ({ onBack }) => {
                                             <span className="text-secondary/60">Streak Broken (User Initials Shown)</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded bg-white/5 border border-white/5" />
-                                            <span className="text-secondary/30">All Clear</span>
+                                            <div className="w-3 h-3 rounded bg-success/10 border border-success/20" />
+                                            <span className="text-success/60">All Clear</span>
                                         </div>
                                     </div>
                                 </div>
@@ -592,10 +464,10 @@ const SocialDashboard = ({ onBack }) => {
                         )}
                     </div>
                 </div>
-            </div >
+            </div>
 
             {/* Create Modal */}
-            < AnimatePresence >
+            <AnimatePresence>
                 {isCreating && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                         <m.div
@@ -661,12 +533,11 @@ const SocialDashboard = ({ onBack }) => {
                             </form>
                         </m.div>
                     </div>
-                )
-                }
-            </AnimatePresence >
+                )}
+            </AnimatePresence>
 
             {/* Join Modal */}
-            < AnimatePresence >
+            <AnimatePresence>
                 {isJoining && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                         <m.div
@@ -718,10 +589,10 @@ const SocialDashboard = ({ onBack }) => {
                         </m.div>
                     </div>
                 )}
-            </AnimatePresence >
+            </AnimatePresence>
 
             {/* User History Modal */}
-            < AnimatePresence >
+            <AnimatePresence>
                 {selectedPlayer && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 px-4">
                         <m.div
@@ -813,10 +684,10 @@ const SocialDashboard = ({ onBack }) => {
                         </m.div>
                     </div>
                 )}
-            </AnimatePresence >
+            </AnimatePresence>
 
             {/* Leave Confirmation */}
-            < AnimatePresence >
+            <AnimatePresence>
                 {showLeaveConfirm && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                         <m.div
@@ -855,10 +726,10 @@ const SocialDashboard = ({ onBack }) => {
                         </m.div>
                     </div>
                 )}
-            </AnimatePresence >
+            </AnimatePresence>
 
             {/* Delete Confirmation */}
-            < AnimatePresence >
+            <AnimatePresence>
                 {showDeleteConfirm && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                         <m.div
@@ -897,7 +768,7 @@ const SocialDashboard = ({ onBack }) => {
                         </m.div>
                     </div>
                 )}
-            </AnimatePresence >
+            </AnimatePresence>
         </>
     );
 };
