@@ -411,9 +411,15 @@ const SocialDashboard = ({ onBack }) => {
                                                         </span>
 
                                                         {breakers && (
-                                                            <div className="flex flex-row items-center justify-center gap-0.5 px-0.5 max-w-full overflow-hidden">
+                                                            <div className={`flex flex-row items-center justify-center ${Array.from(breakers).length > 2 ? 'gap-0' : 'gap-0.5'} px-0.5 max-w-full overflow-hidden`}>
                                                                 {Array.from(breakers).map((name, bIdx) => (
-                                                                    <span key={bIdx} className="shrink-0 text-[7px] md:text-[8px] font-black leading-none bg-error/20 px-1 py-0.5 rounded shadow-sm animate-in fade-in zoom-in duration-300">
+                                                                    <span
+                                                                        key={bIdx}
+                                                                        className={`shrink-0 font-black leading-none bg-error/20 rounded shadow-sm animate-in fade-in zoom-in duration-300 ${Array.from(breakers).length > 2
+                                                                                ? 'text-[6px] md:text-[7px] px-0.5 py-0.5 -ml-0.5 first:ml-0'
+                                                                                : 'text-[7px] md:text-[8px] px-1 py-0.5'
+                                                                            }`}
+                                                                    >
                                                                         {getInitials(name)}
                                                                     </span>
                                                                 ))}
